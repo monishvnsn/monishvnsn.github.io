@@ -77,3 +77,15 @@ p{margin:0 0 12px;color:var(--muted)}p:last-child{margin-bottom:0}
 .js .rv.in{opacity:1;transform:none}
 @media (max-width:700px){.sec-head{grid-template-columns:1fr;gap:12px}.label{padding-top:0}.hero{padding:48px 0 44px}.section{padding:44px 0}.card{padding:24px}.title span:last-child{display:none}nav a{padding:6px 8px}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.js .rv{opacity:1;transform:none}.progress{display:none}}
+/* skills groups, timeline */
+.sgroups{display:grid;gap:22px}
+.sg-l{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:10px}
+.chips li.v{display:inline-flex;align-items:center;gap:6px}
+.ck{display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:9px;font-weight:700}
+.note{font-size:13px!important;color:var(--faint);display:flex;align-items:center;gap:6px}
+.now{font-size:15px;color:var(--text);margin-bottom:10px;display:flex;align-items:baseline;gap:10px}.now .sg-l{margin:0;color:var(--accent)}
+.tl{list-style:none;margin:0 0 28px;padding:0 0 0 22px;border-left:1px solid var(--border)}
+.tl li{position:relative;padding-bottom:22px}.tl li:last-child{padding-bottom:0}
+.tl li::before{content:"";position:absolute;left:-27px;top:6px;width:9px;height:9px;border-radius:50%;background:var(--card);border:2px solid var(--accent)}
+.tl-d{font-size:13px;color:var(--faint);font-weight:500;margin-bottom:2px}.tl h3{margin:0 0 2px}.tl p{font-size:15px!important}
+.certs .chips li{font-size:13px}
