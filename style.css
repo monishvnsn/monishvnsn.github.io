@@ -206,75 +206,32 @@ p:last-child { margin-bottom: 0; }
 }
 .dot { width: 7px; height: 7px; border-radius: 50%; background: #15803d; flex: none; }
 .tagline {
+  display: grid;
   font-size: clamp(19px, 2.6vw, 23px);
   color: var(--text);
   font-weight: 500;
   margin: 4px 0 14px;
   letter-spacing: -.015em;
-  max-width: 100%;
+  max-width: 40rem;
 }
-.tagline-static { color: var(--text); }
+.focus-final, .focus-live { grid-area: 1 / 1; max-width: 100%; }
+.focus-live { display: none; align-self: start; }
+.focus-lead { display: block; color: var(--text); }
 .rot {
-  display: inline-grid;
-  vertical-align: baseline;
+  display: grid;
+  width: 100%;
   color: var(--accent);
-  white-space: nowrap;
-  margin-left: .35em;
+  margin-top: 2px;
 }
 .rot-sizer, .rot-text { grid-area: 1 / 1; }
 .rot-sizer { visibility: hidden; display: grid; }
-.rot-phrase, .rot-text { white-space: nowrap; }
-.rot-phrase { grid-area: 1 / 1; padding-right: 8px; }
-html.js:not([data-reduce]) .rot:not(.is-paused) .rot-text::after {
-  content: "";
-  display: inline-block;
-  width: 2px;
-  height: .9em;
-  margin-left: 3px;
-  vertical-align: -.08em;
-  background: currentColor;
-  animation: blink 1s steps(1) infinite;
-}
-@keyframes blink { 50% { opacity: 0; } }
-html:not(.js) .rot,
-html[data-reduce] .rot {
-  display: inline;
+.rot-phrase, .rot-text {
+  grid-area: 1 / 1;
   white-space: normal;
+  overflow-wrap: anywhere;
 }
-html:not(.js) .rot-sizer,
-html[data-reduce] .rot-sizer {
-  visibility: visible;
-  display: inline;
-}
-html:not(.js) .rot-phrase,
-html[data-reduce] .rot-phrase {
-  display: inline;
-  grid-area: auto;
-  white-space: normal;
-  padding-right: 0;
-}
-html:not(.js) .rot-phrase:not(:last-child)::after,
-html[data-reduce] .rot-phrase:not(:last-child)::after {
-  content: " · ";
-}
-html:not(.js) .rot-text,
-html[data-reduce] .rot-text { display: none; }
-.rot-ctrl {
-  display: none;
-  margin-left: 10px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--faint);
-  font: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  cursor: pointer;
-  vertical-align: baseline;
-}
-html.js:not([data-reduce]) .rot-ctrl { display: inline; }
+html[data-animate] .focus-live { display: block; }
+html[data-animate] .focus-final { display: none; }
 .lead { font-size: 17px; max-width: 42rem; margin-bottom: 28px; }
 .actions { display: flex; flex-wrap: wrap; gap: 12px; }
 .btn {
@@ -380,7 +337,20 @@ h2.label span, .idx { color: var(--accent); margin-right: 8px; font-variant-nume
 .role-d { color: var(--muted); font-size: 14px; }
 .certs { margin-top: 8px; }
 .certs .chips li { font-size: 13.5px; }
-.projects, .quotes { display: grid; gap: 14px; }
+.projects, .quotes, .x-embed { display: grid; gap: 14px; }
+.x-embed { max-width: 550px; }
+blockquote.twitter-tweet {
+  margin: 0;
+  width: 100%;
+  max-width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 18px;
+  box-shadow: var(--shadow);
+}
+blockquote.twitter-tweet p { color: var(--text); margin-bottom: 8px; }
+.x-embed iframe { max-width: 100% !important; }
 .project h3 { margin: 0; font-size: 18px; }
 .facts { margin: 14px 0 12px; }
 .facts div { margin: 0 0 12px; }
@@ -463,12 +433,8 @@ blockquote { margin: 0; }
   }
   .js .rv { opacity: 1; }
   .progress { display: none; }
-  .rot, html.js .rot { display: inline; white-space: normal; }
-  .rot-sizer, html.js .rot-sizer { visibility: visible; display: inline; }
-  .rot-phrase, html.js .rot-phrase { display: inline; grid-area: auto; white-space: normal; padding-right: 0; }
-  .rot-phrase:not(:last-child)::after { content: " · "; }
-  .rot-text, html.js .rot-text { display: none !important; }
-  .rot-ctrl, html.js .rot-ctrl { display: none !important; }
+  .focus-live { display: none !important; }
+  .focus-final { visibility: visible !important; }
 }
 @media (forced-colors: active) {
   .btn, .pill, .card, .project, .quote, .book, .theme { border: 1px solid ButtonText; }
