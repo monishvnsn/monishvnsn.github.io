@@ -10,4 +10,4 @@ Plain static personal site (no build step).
 2. Settings > Pages > Deploy from branch `main` / root. Custom domain: monishvnsn.dev, enable HTTPS.
 3. At Name.com DNS: A records for `@` -> 185.199.108.153, 185.199.109.153, 185.199.110.153, 185.199.111.153; CNAME `www` -> monishvnsn.github.io.
 
-The free 30-minute call button is an email request until a real scheduling URL is added in `index.html` (`#book-call`). Do not invent a booking link.
+Free Cal.com booking stays disconnected until a verified event path is set on `#cal-embed` (`data-cal-link`). Do not invent that path. Email remains an ordinary contact link, not a booking button.

@@ -16,6 +16,7 @@
         root.dataset.theme = next;
         themeBtn.setAttribute("aria-pressed", next === "dark" ? "true" : "false");
         try { localStorage.setItem("theme", next); } catch (e) {}
+        if (typeof applyTweetTheme === "function") applyTweetTheme();
       });
     }
   } catch (e) {}
@@ -91,140 +92,132 @@
     var phrases = rot ? Array.prototype.map.call(rot.querySelectorAll(".rot-phrase"), function (node) {
       return node.textContent;
     }) : [];
-    var pauseBtn = d.querySelector(".rot-ctrl");
-    var timer = 0;
-    var index = 0;
-    var count = phrases.length ? phrases[0].length : 0;
-    var mode = "hold";
-    var paused = false;
+    var focusTimer = 0;
+    var focusIndex = 0;
 
-    function stop() {
-      if (timer) {
-        clearTimeout(timer);
-        timer = 0;
+    function settleFocus() {
+      if (focusTimer) {
+        clearTimeout(focusTimer);
+        focusTimer = 0;
       }
+      delete root.dataset.animate;
     }
 
-    function show(value) {
-      if (text) text.textContent = value;
-    }
-
-    function step() {
-      if (reduced() || paused || !text || !phrases.length) return;
-      var phrase = phrases[index];
-      if (mode === "hold") {
-        mode = "delete";
-        count = phrase.length;
-        show(phrase);
-        timer = setTimeout(step, 34);
-        return;
-      }
-      if (mode === "delete") {
-        count = Math.max(0, count - 1);
-        show(phrase.slice(0, count));
-        if (count === 0) {
-          index = (index + 1) % phrases.length;
-          mode = "type";
-          timer = setTimeout(step, 320);
-        } else {
-          timer = setTimeout(step, 34);
+    if (root.dataset.animate === "1" && text && phrases.length && !reduced()) {
+      text.textContent = phrases[0];
+      focusTimer = setTimeout(function step() {
+        focusIndex += 1;
+        if (reduced() || focusIndex >= phrases.length) {
+          settleFocus();
+          return;
         }
-        return;
-      }
-      phrase = phrases[index];
-      count = Math.min(phrase.length, count + 1);
-      show(phrase.slice(0, count));
-      if (count >= phrase.length) {
-        mode = "hold";
-        timer = setTimeout(step, 1800);
-      } else {
-        timer = setTimeout(step, 62);
-      }
-    }
-
-    function arm() {
-      stop();
-      if (reduced() || paused || !text || !phrases.length) return;
-      mode = "hold";
-      count = phrases[index].length;
-      show(phrases[index]);
-      timer = setTimeout(step, 1800);
-    }
-
-    if (pauseBtn && phrases.length) {
-      pauseBtn.addEventListener("click", function () {
-        paused = !paused;
-        pauseBtn.setAttribute("aria-pressed", paused ? "true" : "false");
-        pauseBtn.textContent = paused ? "Resume" : "Pause";
-        pauseBtn.setAttribute("aria-label", paused ? "Resume rotating phrases" : "Pause rotating phrases");
-        if (paused) {
-          stop();
-          show(phrases[index]);
-          if (rot) rot.classList.add("is-paused");
-        } else if (rot) {
-          rot.classList.remove("is-paused");
-          arm();
-        }
+        text.textContent = phrases[focusIndex];
+        focusTimer = setTimeout(step, 1000);
+      }, 1000);
+      d.addEventListener("visibilitychange", function () {
+        if (d.hidden) settleFocus();
       });
-    }
-
-    if (motion.addEventListener) {
-      motion.addEventListener("change", function () {
-        if (motion.matches) {
-          root.dataset.reduce = "true";
-          stop();
-          paused = false;
-          if (rot) rot.classList.remove("is-paused");
-        } else {
-          delete root.dataset.reduce;
-          paused = false;
-          if (pauseBtn) {
-            pauseBtn.setAttribute("aria-pressed", "false");
-            pauseBtn.textContent = "Pause";
-            pauseBtn.setAttribute("aria-label", "Pause rotating phrases");
+      if (motion.addEventListener) {
+        motion.addEventListener("change", function () {
+          if (motion.matches) {
+            root.dataset.reduce = "true";
+            settleFocus();
           }
-          if (rot) rot.classList.remove("is-paused");
-          index = 0;
-          count = phrases.length ? phrases[0].length : 0;
-          arm();
-        }
-      });
-    }
-
-    d.addEventListener("visibilitychange", function () {
-      if (reduced()) return;
-      if (d.hidden) {
-        stop();
-        return;
+        });
       }
-      if (!paused) arm();
-    });
+    } else {
+      settleFocus();
+    }
+  } catch (e) {}
 
-    if (!reduced()) arm();
+  function tweetTheme() {
+    return root.dataset.theme === "dark" ? "dark" : "light";
+  }
+
+  function applyTweetTheme() {
+    var theme = tweetTheme();
+    Array.prototype.forEach.call(d.querySelectorAll("blockquote.twitter-tweet"), function (el) {
+      el.setAttribute("data-theme", theme);
+      el.setAttribute("data-dnt", "true");
+    });
+    Array.prototype.forEach.call(d.querySelectorAll(".twitter-tweet iframe, iframe.twitter-tweet"), function (frame) {
+      try {
+        var url = new URL(frame.src);
+        if (url.searchParams.has("theme")) {
+          url.searchParams.set("theme", theme);
+          if (frame.src !== url.toString()) frame.src = url.toString();
+        }
+      } catch (err) {}
+    });
+  }
+
+  try {
+    applyTweetTheme();
+    if (d.querySelector("blockquote.twitter-tweet") && !d.getElementById("twitter-wjs")) {
+      var tweetScript = d.createElement("script");
+      tweetScript.id = "twitter-wjs";
+      tweetScript.async = true;
+      tweetScript.charset = "utf-8";
+      tweetScript.src = "https://platform.twitter.com/widgets.js";
+      tweetScript.onerror = function () {
+        var note = d.getElementById("embed-status");
+        if (note) note.textContent = "X previews could not be loaded. Each post is still linked above.";
+      };
+      d.body.appendChild(tweetScript);
+    }
   } catch (e) {}
 
   try {
-    var embedBtn = d.getElementById("load-embeds");
-    if (embedBtn) {
-      embedBtn.addEventListener("click", function () {
-        var note = d.getElementById("embed-status");
-        if (d.getElementById("twitter-wjs")) return;
-        var script = d.createElement("script");
-        script.id = "twitter-wjs";
-        script.async = true;
-        script.src = "https://platform.twitter.com/widgets.js";
-        script.onload = function () {
-          if (note) note.textContent = "Embedded posts were requested from X. If a post does not appear, use the link in that quote.";
+    var calSlot = d.getElementById("cal-embed");
+    var calStatus = d.getElementById("cal-status");
+    function verifiedCalPath(value) {
+      var raw = (value || "").trim();
+      if (!raw) return "";
+      var url;
+      try { url = new URL(raw, "https://cal.com"); } catch (err) { return ""; }
+      if (url.protocol !== "https:") return "";
+      if (url.hostname !== "cal.com" && url.hostname !== "www.cal.com") return "";
+      var parts = url.pathname.split("/").filter(Boolean);
+      if (parts.length < 2) return "";
+      if (!/^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(parts[0]) || !/^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(parts[1])) return "";
+      return parts[0] + "/" + parts[1];
+    }
+    var calPath = calSlot ? verifiedCalPath(calSlot.getAttribute("data-cal-link")) : "";
+    if (calSlot && calPath && !window.Cal) {
+      if (calStatus) calStatus.hidden = true;
+      (function (C, A, L) {
+        var p = function (a, ar) { a.q.push(ar); };
+        var doc = C.document;
+        C.Cal = C.Cal || function () {
+          var cal = C.Cal;
+          var ar = arguments;
+          if (!cal.loaded) {
+            cal.ns = {};
+            cal.q = cal.q || [];
+            var script = doc.createElement("script");
+            script.src = A;
+            script.async = true;
+            doc.head.appendChild(script);
+            cal.loaded = true;
+          }
+          if (ar[0] === L) {
+            var api = function () { p(api, arguments); };
+            var namespace = ar[1];
+            api.q = api.q || [];
+            if (typeof namespace === "string") {
+              cal.ns[namespace] = cal.ns[namespace] || api;
+              p(cal.ns[namespace], ar);
+              p(cal, ["initNamespace", namespace]);
+            } else p(cal, ar);
+            return;
+          }
+          p(cal, ar);
         };
-        script.onerror = function () {
-          if (note) note.textContent = "Embedded posts could not be loaded. The text and links above still open each post on X.";
-          embedBtn.disabled = false;
-          embedBtn.textContent = "Load embedded posts";
-        };
-        d.body.appendChild(script);
-        embedBtn.disabled = true;
-        embedBtn.textContent = "Loading embeds…";
-        if (note) note.textContent = "Loading embedded posts from X. The quotes above stay if an embed does not appear.";
+      })(window, "https://app.cal.com/embed/embed.js", "init");
+      window.Cal("init", "site", { origin: "https://cal.com" });
+      window.Cal.ns.site("inline", {
+        elementOrSelector: "#cal-embed",
+        calLink: calPath
       });
     }
   } catch (e) {}
